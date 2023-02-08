@@ -12,6 +12,7 @@ const Item = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1.1),
   textAlign: 'left',
   color: theme.palette.text.secondary,
+  fontFamily: 'monospace'
 }));
 
 const DetailPokemon = (props) => {
@@ -65,7 +66,7 @@ const DetailPokemon = (props) => {
                 <Box key={item.stat.name}>
                   <Typography 
                       variant="h6"
-                      sx={{ textAlign: 'left', mt: 1 }}
+                      sx={{ textAlign: 'left', mt: 1, fontFamily: 'monospace' }}
                   >
                       {item.stat.name}: {item.base_stat}
                   </Typography>
@@ -90,7 +91,7 @@ const DetailPokemon = (props) => {
       <Box>
         <Grid sx={{  textAlign: 'left' }}>
           { props.detail.moves.slice(0, index).map((item) => 
-            <Button variant="contained" sx={{ m: 1 }}>{item.move.name}</Button>
+            <Button variant="contained" sx={{ m: 1, fontFamily: 'monospace' }}>{item.move.name}</Button>
           )}
         <Button variant='outlined' size="small" onClick={() => setIndex(props.detail.moves.length)}>load more</Button>
         </Grid>
