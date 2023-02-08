@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/pokeball-app/static/css/main.5a48ab1e.css",
+    "main.js": "/pokeball-app/static/js/main.cfcce576.js",
+    "static/js/787.235782ee.chunk.js": "/pokeball-app/static/js/787.235782ee.chunk.js",
+    "static/media/pokeball.png": "/pokeball-app/static/media/pokeball.493785ffc371d4b347d8.png",
+    "index.html": "/pokeball-app/index.html",
+    "main.5a48ab1e.css.map": "/pokeball-app/static/css/main.5a48ab1e.css.map",
+    "main.cfcce576.js.map": "/pokeball-app/static/js/main.cfcce576.js.map",
+    "787.235782ee.chunk.js.map": "/pokeball-app/static/js/787.235782ee.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5a48ab1e.css",
+    "static/js/main.cfcce576.js"
+  ]
+}
