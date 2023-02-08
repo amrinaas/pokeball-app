@@ -1,5 +1,6 @@
 const initialState = {
-    pokemons: []
+    pokemons: [],
+    detail: null
 };
 
 export default (state = initialState, action) => {
@@ -9,7 +10,11 @@ export default (state = initialState, action) => {
                 ...state,
                 pokemons: action.payload
             }
-    
+        case 'DETAIL_POKEMON':
+            return {
+                ...state,
+                detail: action.payload
+            }
         default:
             break;
     }
