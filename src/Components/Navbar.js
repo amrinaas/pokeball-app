@@ -16,8 +16,8 @@ const Navbar = (props) => {
   ]
 
   return (
-    <div className=''>
-      <div className='flex justify-between items-center h-24 mx-10 px-4 text-white'>
+    <div className='w-full'>
+      <div className='flex justify-between items-center h-24 px-14 bg-slate-500/20'>
         {/* Logo */}
         <NavLink to={'/'}>
           <div className='flex items-center justify-center'>

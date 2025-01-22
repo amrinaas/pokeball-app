@@ -55,9 +55,9 @@ const Home = (props) => {
     <h1>Loading</h1>
   ) : (
     <Navbar>
-      <h1>Poké Card</h1>
+      <h1 className='my-5 text-2xl font-bold'>Poké Card</h1>
       <CardList pokemons={data} />
-      {loading && <h1>Loading more...</h1>}
+      {loading && <h1 className='text-xl mb-7'>Loading more...</h1>}
     </Navbar>
   )
 }
