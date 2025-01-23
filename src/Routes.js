@@ -1,15 +1,15 @@
-import Home from './Pages/Home';
-import DetailPokemon from './Pages/DetailPokemon';
+import PokemonList from './Pages/PokemonList'
+import PokemonDetail from './Pages/PokemonDetail'
 
 export const publicRoutes = [
-    {
-        components: Home,
-        path: '/',
-        exact: true
-    },
-    {
-        components: DetailPokemon,
-        path: '/pokemon/:id',
-        exact: true
-    }
+  {
+    components: PokemonList,
+    path: '/',
+    exact: true,
+  },
+  {
+    components: PokemonDetail,
+    path: '/pokemon/:id',
+    exact: true,
+  },
 ]
