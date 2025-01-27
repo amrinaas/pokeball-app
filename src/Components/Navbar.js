@@ -17,7 +17,7 @@ const Navbar = (props) => {
 
   return (
     <div className='w-full'>
-      <div className='flex justify-between items-center h-24 px-14 bg-slate-500/20'>
+      <div className='flex justify-between items-center h-24 px-14 bg-[#f66947]'>
         {/* Logo */}
         <NavLink to={'/'}>
           <div className='flex items-center justify-center'>
@@ -32,8 +32,8 @@ const Navbar = (props) => {
             <NavLink
               to={item.url}
               className={({ isActive }) =>
-                `p-4 hover:bg-[#f66947] rounded-xl m-2 cursor-pointer duration-300 hover:text-black ${
-                  isActive ? 'bg-[#f66947] text-black' : ''
+                `p-4 rounded-xl m-2 cursor-pointer duration-300 tracking-widest hover:text-black hover:font-bold ${
+                  isActive ? 'text-black font-bold' : ''
                 }`
               }
               key={item.id}
