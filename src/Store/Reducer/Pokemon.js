@@ -3,6 +3,7 @@ const initialState = {
   detail: null,
   species: null,
   evolutionChain: null,
+  colors: [],
 }
 
 export default (state = initialState, action) => {
@@ -33,6 +34,16 @@ export default (state = initialState, action) => {
         detail: null,
         species: null,
         evolutionChain: null,
+      }
+    case 'POKEMON_COLOR':
+      return {
+        ...state,
+        colors: action.payload,
+      }
+    case 'GET_POKEMON_BY_COLOR':
+      return {
+        ...state,
+        pokemons: action.payload,
       }
     default:
       break
