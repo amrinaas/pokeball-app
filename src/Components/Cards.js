@@ -26,27 +26,27 @@ const Cards = ({ image, name, id, color, stats, type }) => {
   }, [id])
 
   return (
-    <Link to={`/pokemon/${id + 1}`}>
+    <Link to={`/pokemon/${id}`}>
       <div
         key={id}
         style={{ backgroundColor: getColorHex(color) }}
         className={`shadow-xl text-black ease-out transition-all duration-300 m-3 p-1 rounded-md flex flex-col justify-center items-center hover:scale-110 hover:cursor-pointer hover:shadow-2xl`}
       >
         {loading && <Loading />}
-        <h6 className='text-right w-full font-bold'>#{id}</h6>
-        <div>
-          <img
-            src={`${image}/${id}.png`}
-            alt={name}
-            onLoad={() => setLoading(false)}
-            className={`h-32 w-32 object-contain ${loading} ? 'hidden' : 'block'`}
-          />
-        </div>
         {!loading && (
           <>
+            <h6 className='text-right w-full font-bold'>#{id}</h6>
             <h5 className='text-xl font-semibold'>
               {name.charAt(0).toUpperCase() + name.slice(1)}
             </h5>
+            <img
+              src={`${image}/${id}.png`}
+              alt={name}
+              onLoad={() => setLoading(false)}
+              className={`h-32 w-32 object-contain ${
+                loading ? 'hidden' : 'block'
+              }`}
+            />
             <p className='text-sm'>Type: {type}</p>
             <div className='p-2 w-full text-xs'>
               {stats.map((stat, i) => (
