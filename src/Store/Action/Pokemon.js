@@ -8,38 +8,26 @@ export const getPokemon = (params) => async (dispatch) => {
     )
     const pokemons = response.data.results
 
-    const colorsResponse = await axios.get(
-      'https://pokeapi.co/api/v2/pokemon-color'
-    )
-    const colors = colorsResponse.data.results
+    const detailedPokemonPromises = pokemons.map(async (pokemon) => {
+      const color = await getPokemonByColor(pokemon.name)
 
-    const detailedPokemonPromises = colors.map(async (color) => {
-      const pokemonByColorResponse = await axios.get(color.url)
-      const pokemonByColor = pokemonByColorResponse.data.pokemon_species
-
-      const matchingPokemons = pokemons.filter((pokemon) =>
-        pokemonByColor.some((species) => species.name === pokemon.name)
+      const pokemonDetailsResponse = await axios.get(
+        `https://pokeapi.co/api/v2/pokemon/${pokemon.name}`
       )
+      const pokemonDetails = pokemonDetailsResponse.data
 
-      const pokemonDetailsPromises = matchingPokemons.map(async (pokemon) => {
-        const pokemonDetailsResponse = await axios.get(pokemon.url)
-        const pokemonDetails = pokemonDetailsResponse.data
-
-        return {
-          name: pokemonDetails.name,
-          types: pokemonDetails.types[0].type.name,
-          stats: pokemonDetails.stats,
-          color: color.name,
-          id: pokemonDetails.id,
-          image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon`,
-        }
-      })
-
-      return Promise.all(pokemonDetailsPromises)
+      return {
+        name: pokemonDetails.name,
+        types: pokemonDetails.types,
+        stats: pokemonDetails.stats,
+        color: color,
+        id: pokemonDetails.id,
+        image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
+      }
     })
 
     const detailedPokemonArrays = await Promise.all(detailedPokemonPromises)
-    const detailedPokemon = detailedPokemonArrays.flat()
+    const detailedPokemon = detailedPokemonArrays
 
     const shuffledPokemon = detailedPokemon.sort(() => Math.random() - 0.5)
 
@@ -103,15 +91,30 @@ export const getListPokemonColor = () => (dispatch) => {
     .catch((err) => console.error('detail error', err))
 }
 
-export const getPokemonByColor = (params) => (dispatch) => {
-  const { id } = params
-  axios
-    .get(`https://pokeapi.co/api/v2/pokemon-color/${id}`)
-    .then((response) => {
-      dispatch({
-        type: 'GET_POKEMON_BY_COLOR',
-        payload: response.data.pokemon_species,
-      })
-    })
-    .catch((err) => console.error('detail error', err))
+export const getPokemonByColor = async (name) => {
+  try {
+    const pokemonColors = await axios.get(
+      `https://pokeapi.co/api/v2/pokemon-color`
+    )
+
+    const colors = pokemonColors.data.results
+
+    for (const color of colors) {
+      const pokemonByColorResponse = await axios.get(color.url)
+      const pokemonByColor = pokemonByColorResponse.data.pokemon_species
+
+      const matchingPokemon = pokemonByColor.find(
+        (species) => species.name === name
+      )
+
+      if (matchingPokemon) {
+        return color.name
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('error getPokemonByColor', error)
+    return null
+  }
 }
