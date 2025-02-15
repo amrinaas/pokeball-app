@@ -73,7 +73,7 @@ const Cards = ({ image, name, id, color, type }) => {
             />
           </>
         )}
-        <div className='flex flex-wrap mb-3 justify-around mt-5 w-full'>
+        <div className='flex capitalize flex-wrap mb-3 justify-around mt-5 w-full'>
           {type.map((t, i) => (
             <Badge
               key={i}
