@@ -44,21 +44,25 @@ const PokemonDetail = (props) => {
           <img
             src={getImageUrl(chain.species.name)}
             alt={chain.species.name}
-            className='rounded-xl w-full shadow-md h-56 p-3 object-contain bg-white'
+            className='rounded-xl lg:w-56 md:w-60 w-80 shadow-md h-56 p-3 object-contain bg-white'
           />
           <p className='capitalize mt-2'>{chain.species.name}</p>
         </div>
         {chain.evolves_to.length > 0 && (
-          <>
+          <React.Fragment>
             <div className='lg:text-5xl md:text-3xl text-2xl font-bold lg:mx-3 md:mx-1.5 mx-1 lg:block md:block hidden'>
               &#x2192;
             </div>
             <div className='lg:text-5xl md:text-3xl text-2xl font-bold lg:mx-3 md:mx-1.5 mx-1 lg:hidden md:hidden'>
               &#x2193;
             </div>
-          </>
+          </React.Fragment>
         )}
-        {chain.evolves_to.map((evolution) => renderEvolution(evolution))}
+        {chain.evolves_to.map((evolution, index) => (
+          <React.Fragment key={index}>
+            {renderEvolution(evolution)}
+          </React.Fragment>
+        ))}
       </div>
     )
   }
@@ -174,9 +178,9 @@ const PokemonDetail = (props) => {
             <p className='flex flex-wrap'>
               {movesToShow.map((item, id) => {
                 return (
-                  <>
+                  <React.Fragment key={id}>
                     <span className='leading-loose mr-0.5 ml-0.5 first:ml-0'>
-                      <Badge key={id} text={item.move.name} color={'#a29f58'} />
+                      <Badge text={item.move.name} color={'#a29f58'} />
                     </span>
                     {!showAll && detail.moves.length > 10 && id === 9 && (
                       <button
@@ -194,7 +198,7 @@ const PokemonDetail = (props) => {
                         Hide
                       </button>
                     )}
-                  </>
+                  </React.Fragment>
                 )
               })}
             </p>
