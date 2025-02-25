@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { detailPokemon, pokemonSpecies } from '../Store/Action/Pokemon'
 import Layout from '../Components/Layout'
 import Loading from '../Components/Loading'
 import Badge from '../Components/Badge'
+
 const PokemonDetail = (props) => {
   const { id } = useParams()
   const { detail, species, detailPokemon, pokemonSpecies, evolutionChain } =
     props
   const [showAll, setShowAll] = useState(false)
-  // const [loading, setLoading] = useState(false)
+  const [loadingImage, setLoadingImage] = useState(true)
 
   useEffect(() => {
     detailPokemon({ id: id })
@@ -18,7 +19,13 @@ const PokemonDetail = (props) => {
     // eslint-disable-next-line
   }, [id, detailPokemon, pokemonSpecies])
 
-  if (!detail || !species) return <Loading />
+  if (!detail || !species) {
+    return (
+      <div className='flex justify-center items-center min-h-screen'>
+        <Loading size={'xl'} />
+      </div>
+    )
+  }
 
   const movesToShow =
     showAll && detail !== null ? detail.moves : detail.moves.slice(0, 10)
@@ -31,40 +38,123 @@ const PokemonDetail = (props) => {
     setShowAll(false)
   }
 
-  const renderEvolution = (chain) => {
-    if (!chain) return null
-
+  const EvolutionStage = ({ chain }) => {
     const getImageUrl = (name) => {
       return `https://img.pokemondb.net/artwork/${name}.jpg`
     }
 
+    const id = chain.species.url.split('/').slice(-2, -1)[0]
+
     return (
-      <div className='flex lg:flex-row md:flex-row flex-col items-center justify-center my-3 mx-1'>
-        <div className='flex flex-col items-center'>
-          <img
-            src={getImageUrl(chain.species.name)}
-            alt={chain.species.name}
-            className='rounded-xl lg:w-56 md:w-60 w-80 shadow-md h-56 p-3 object-contain bg-white'
-          />
-          <p className='capitalize mt-2'>{chain.species.name}</p>
-        </div>
-        {chain.evolves_to.length > 0 && (
-          <React.Fragment>
-            <div className='lg:text-5xl md:text-3xl text-2xl font-bold lg:mx-3 md:mx-1.5 mx-1 lg:block md:block hidden'>
-              &#x2192;
-            </div>
-            <div className='lg:text-5xl md:text-3xl text-2xl font-bold lg:mx-3 md:mx-1.5 mx-1 lg:hidden md:hidden'>
-              &#x2193;
-            </div>
-          </React.Fragment>
+      <div
+        className={`flex w-36 bg-white flex-col items-center border-black border-[1px] rounded-xl lg:px-3 md:px-3 px-1 py-2 shadow-md hover:shadow-2xl cursor-pointer relative`}
+      >
+        {loadingImage && (
+          <div className='absolute inset-0 flex justify-center items-center'>
+            <Loading size={'md'} />
+          </div>
         )}
-        {chain.evolves_to.map((evolution, index) => (
-          <React.Fragment key={index}>
-            {renderEvolution(evolution)}
-          </React.Fragment>
-        ))}
+        <img
+          src={getImageUrl(chain.species.name)}
+          alt={chain.species.name}
+          className={`rounded-xl h-40 object-contain w-28 ${
+            loadingImage ? 'opacity-0' : 'opacity-100'
+          }`}
+          onLoad={() => setLoadingImage(false)}
+        />
+
+        {!loadingImage && (
+          <p className='capitalize mt-2'>
+            {chain.species.name} <span className='text-gray-400'>(#{id})</span>
+          </p>
+        )}
       </div>
     )
+  }
+
+  const renderEvolution = (chain) => {
+    if (!chain || !chain.species) return null
+
+    return (
+      <div
+        className={`flex ${
+          chain.evolves_to.length === 0
+            ? 'flex-wrap'
+            : 'lg:flex-row md:flex-row flex-col'
+        } items-center justify-center my-3 mx-1`}
+      >
+        <div className='flex items-center lg:flex-row md:flex-row flex-col'>
+          <Link to={`/pokemon/${chain.species.name}`}>
+            <EvolutionStage chain={chain} />
+          </Link>
+
+          {chain.evolves_to.length !== 0 && (
+            <>
+              <div className='text-5xl font-bold lg:mx-3 md:mx-2 mx-1 lg:block md:block hidden'>
+                &#x2192;
+              </div>
+              <div className='text-5xl font-bold lg:mx-3 md:mx-1.5 mx-1 lg:hidden md:hidden'>
+                &#x2193;
+              </div>
+            </>
+          )}
+        </div>
+
+        {chain.evolves_to.length > 0 && (
+          <div className='flex flex-wrap w-auto justify-center items-center'>
+            {chain.evolves_to.map((evolution, index) => {
+              return (
+                <div className='' key={index}>
+                  {renderEvolution(evolution)}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const getMaxStatValue = (statName) => {
+    const statMaxValues = {
+      hp: 255,
+      attack: 190,
+      defense: 230,
+      'special-attack': 194,
+      'special-defense': 230,
+      speed: 180,
+    }
+
+    return statMaxValues[statName] || 100 // Default max value if not specified
+  }
+
+  const renderStats = (stats) => {
+    return stats.map((stat, i) => {
+      const maxStat = getMaxStatValue(stat.stat.name)
+      const barWidth = (stat.base_stat / maxStat) * 100
+
+      return (
+        <div
+          key={i}
+          className='flex items-center my-2 bg-black/70 p-2 rounded-md shadow-lg'
+        >
+          <p className='w-2/5 text-left text-yellow-300 font-bold uppercase'>
+            {stat.stat.name}
+          </p>
+          <div className='flex flex-col items-center w-1/2'>
+            <div className='bg-gray-200 flex w-full h-3 rounded-lg relative border-2 border-yellow-500'>
+              <div
+                className='bg-green-500 h-full left-0'
+                style={{ width: `${barWidth}%` }}
+              ></div>
+            </div>
+          </div>
+          <p className='w-1/12 text-right text-white font-bold'>
+            {stat.base_stat}
+          </p>
+        </div>
+      )
+    })
   }
 
   return (
@@ -72,12 +162,12 @@ const PokemonDetail = (props) => {
       <h1 className='text-center text-xl font-bold mx-4 my-5 capitalize'>
         {detail.name} (#{detail.id})
       </h1>
-      <div className='flex lg:flex-row flex-col justify-around w-full px-10'>
-        <div className='lg:w-1/3 w-full p-5 flex lg:flex-col md:flex-row flex-col items-center rounded-lg shadow-xl mx-3'>
+      <div className='flex lg:flex-row flex-col justify-around'>
+        <div className='lg:w-1/3 w-full p-5 flex lg:flex-col md:flex-row flex-col items-center rounded-lg shadow-xl lg:mx-3 md:mx-1.5 mx-0'>
           <img
             src={`https://img.pokemondb.net/artwork/${detail.name}.jpg`}
             alt={detail.name}
-            className='bg-white lg:w-full md:w-1/2 w-11/12 h-80 object-contain rounded-lg'
+            className='bg-white lg:w-full md:w-1/2 w-11/12 h-80 shadow-xl object-contain rounded-lg'
           />
 
           {/* Stats */}
@@ -85,32 +175,12 @@ const PokemonDetail = (props) => {
             <h3 className='text-left font-bold mt-3 text-lg underline'>
               Stats :
             </h3>
-            {detail.stats.map((stat, i) => (
-              <div
-                key={i}
-                className='flex items-center my-2 bg-black/70 p-2 rounded-md shadow-lg'
-              >
-                <p className='w-2/5 text-left text-yellow-300 font-bold uppercase'>
-                  {stat.stat.name}
-                </p>
-                <div className='flex flex-col items-center w-1/2'>
-                  <div className='bg-gray-200 flex w-full h-3 rounded-lg relative border-2 border-yellow-500'>
-                    <div
-                      className='bg-green-500 h-full left-0'
-                      style={{ width: `${stat.base_stat}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <p className='w-1/12 text-right text-white font-bold'>
-                  {stat.base_stat}
-                </p>
-              </div>
-            ))}
+            {renderStats(detail.stats)}
           </div>
         </div>
 
-        {/* Description */}
         <div className='mx-3 lg:w-2/3 w-full rounded-lg shadow-xl p-5'>
+          {/* Description */}
           <h3 className='text-left font-bold mt-3 text-lg underline'>
             Description :
           </h3>
@@ -129,18 +199,18 @@ const PokemonDetail = (props) => {
                 <div className='mb-4'>
                   <p className='text-yellow-300 uppercase font-bold'>Weight:</p>
                   <p className='lowercase'>
-                    {(detail.weight * 0.220462).toFixed(1)} lbs
+                    {(detail?.weight * 0.220462)?.toFixed(1) ?? 'unknown'} lbs
                   </p>
                 </div>
                 <div className='mb-4'>
                   <p className='text-yellow-300 uppercase font-bold'>Height:</p>
-                  <p>{(detail.height * 0.3937).toFixed(1)}"</p>
+                  <p>{(detail?.height * 0.3937)?.toFixed(1) ?? 'unknown'} "</p>
                 </div>
                 <div className='mb-4'>
                   <p className='text-yellow-300 uppercase font-bold'>
                     Habitat:
                   </p>
-                  <p>{species.habitat.name}</p>
+                  <p>{species?.habitat?.name ?? 'unknown'}</p>
                 </div>
               </div>
               <div className='w-1/2'>
