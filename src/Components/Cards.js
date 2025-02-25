@@ -13,7 +13,7 @@ const Cards = ({ image, name, id, color, type }) => {
   }, [id])
 
   return (
-    <Link to={`/pokemon/${id}`}>
+    <Link to={`/pokemon/${name}`}>
       <div
         key={id}
         style={{ borderColor: getColorHex(color) }}
