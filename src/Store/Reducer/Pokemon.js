@@ -4,14 +4,36 @@ const initialState = {
   species: null,
   evolutionChain: null,
   colors: [],
+  searchTerm: '',
+  searchResults: [],
+  error: null,
+  loading: false,
+  filterLoading: false,
 }
 
-export default (state = initialState, action) => {
+const pokemonReducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'GET_POKEMON':
+    case 'GET_POKEMON_BEGIN':
+    case 'SEARCH_POKEMON_BEGIN':
       return {
         ...state,
-        pokemons: action.payload,
+        loading: action.type === 'GET_POKEMON_BEGIN' ? true : state.loading,
+        filterLoading:
+          action.type === 'SEARCH_POKEMON_BEGIN' ? true : state.filterLoading,
+      }
+    case 'GET_POKEMON_SUCCESS':
+      return {
+        ...state,
+        pokemons: [...state.pokemons, ...action.payload.pokemons],
+        loading: false,
+        error: null,
+      }
+    case 'GET_POKEMON_ERROR':
+      return {
+        ...state,
+        pokemons: [],
+        loading: false,
+        error: action.error,
       }
     case 'DETAIL_POKEMON':
       return {
@@ -28,13 +50,6 @@ export default (state = initialState, action) => {
         ...state,
         evolutionChain: action.payload,
       }
-    case 'CLEAR_POKEMON':
-      return {
-        ...state,
-        detail: null,
-        species: null,
-        evolutionChain: null,
-      }
     case 'POKEMON_COLOR':
       return {
         ...state,
@@ -45,8 +60,40 @@ export default (state = initialState, action) => {
         ...state,
         pokemons: action.payload,
       }
+    case 'SET_SEARCH_TERM':
+      return {
+        ...state,
+        searchTerm: action.payload,
+      }
+    case 'CLEAR_SEARCH_TERM':
+      return {
+        ...state,
+        searchTerm: '',
+        searchResults: [],
+      }
+    case 'SEARCH_POKEMON_SUCCESS':
+      return {
+        ...state,
+        searchResults: action.payload,
+        filterLoading: false,
+        error: null,
+      }
+    case 'SEARCH_POKEMON_FAILURE':
+      return {
+        ...state,
+        searchResults: [],
+        filterLoading: false,
+        error: action.error,
+      }
+    case 'FETCH_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+      }
     default:
       break
   }
   return state
 }
+
+export default pokemonReducer

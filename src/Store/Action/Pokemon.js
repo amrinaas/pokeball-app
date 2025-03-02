@@ -2,6 +2,7 @@ import axios from 'axios'
 
 export const getPokemon = (params) => async (dispatch) => {
   const { limit, offset } = params
+  dispatch({ type: 'GET_POKEMON_BEGIN' })
   try {
     const response = await axios.get(
       `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
@@ -32,16 +33,20 @@ export const getPokemon = (params) => async (dispatch) => {
     const shuffledPokemon = detailedPokemon.sort(() => Math.random() - 0.5)
 
     dispatch({
-      type: 'GET_POKEMON',
-      payload: shuffledPokemon,
+      type: 'GET_POKEMON_SUCCESS',
+      payload: { pokemons: shuffledPokemon },
     })
   } catch (err) {
-    console.error('error', err)
+    dispatch({
+      type: 'GET_POKEMON_ERROR',
+      error: err,
+    })
   }
 }
 
 export const detailPokemon = (params) => (dispatch) => {
   const { id } = params
+  dispatch({ type: 'GET_POKEMON_BEGIN' })
   axios
     .get(`https://pokeapi.co/api/v2/pokemon/${id}`)
     .then((response) => {
@@ -71,12 +76,6 @@ export const pokemonSpecies = (params) => (dispatch) => {
       })
     })
     .catch((err) => console.error('detail error', err))
-}
-
-export const clearPokemon = () => (dispatch) => {
-  dispatch({
-    type: 'CLEAR_POKEMON',
-  })
 }
 
 export const getListPokemonColor = () => (dispatch) => {
