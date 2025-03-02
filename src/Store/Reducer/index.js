@@ -1,4 +1,5 @@
-import { combineReducers } from 'redux';
-import Pokemon  from './Pokemon';
+import { combineReducers } from 'redux'
+import Pokemon from './Pokemon'
+import Filter from './Filter'
 
-export default combineReducers({ Pokemon });
+export default combineReducers({ Pokemon, Filter })
