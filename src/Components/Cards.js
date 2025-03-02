@@ -17,9 +17,13 @@ const Cards = ({ image, name, id, color, type }) => {
       <div
         key={id}
         style={{ borderColor: getColorHex(color) }}
-        className={`shadow-xl border-4 bg-white text-black ease-out transition-all duration-300 m-3 p-1 rounded-lg flex flex-col justify-center items-center hover:scale-110 hover:cursor-pointer hover:shadow-2xl relative`}
+        className={`shadow-xl border-4 bg-white text-black ease-out transition-all duration-300 m-3 p-1 rounded-lg flex flex-col justify-center items-center hover:scale-110 hover:cursor-pointer hover:shadow-2xl relative min-h-64`}
       >
-        {loading && <Loading />}
+        {loading && (
+          <div className='absolute inset-0 flex justify-center items-center'>
+            <Loading />
+          </div>
+        )}
         {!loading && (
           <>
             <div className='absolute top-0 left-0 w-16 h-16'>
@@ -43,17 +47,17 @@ const Cards = ({ image, name, id, color, type }) => {
                 loading ? 'hidden' : 'block'
               }`}
             />
+            <div className='flex capitalize flex-wrap mb-3 justify-around mt-5 w-full'>
+              {type.map((t, i) => (
+                <Badge
+                  key={i}
+                  text={t.type.name}
+                  color={getColorBadgeHex(t.type.name)}
+                />
+              ))}
+            </div>
           </>
         )}
-        <div className='flex capitalize flex-wrap mb-3 justify-around mt-5 w-full'>
-          {type.map((t, i) => (
-            <Badge
-              key={i}
-              text={t.type.name}
-              color={getColorBadgeHex(t.type.name)}
-            />
-          ))}
-        </div>
       </div>
     </Link>
   )
