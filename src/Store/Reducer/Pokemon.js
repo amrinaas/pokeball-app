@@ -1,94 +1,109 @@
+import {
+  GET_POKEMON_BEGIN,
+  GET_POKEMON_SUCCESS,
+  GET_POKEMON_ERROR,
+  GET_DETAIL_POKEMON_BEGIN,
+  DETAIL_POKEMON,
+  GET_DETAIL_POKEMON_ERROR,
+  GET_POKEMON_SPECIES_BEGIN,
+  POKEMON_SPECIES,
+  GET_POKEMON_SPECIES_ERROR,
+  EVOLUTION_CHAIN,
+  POKEMON_COLOR,
+  SHOW_POKEMON_MOVES,
+} from '../Types'
+
 const initialState = {
+  loading: false,
   pokemons: [],
+  error: null,
+  loadingDetail: true,
   detail: null,
+  errorDetail: null,
+  loadingSpecies: true,
   species: null,
+  errorSpecies: null,
   evolutionChain: null,
   colors: [],
-  searchTerm: '',
-  searchResults: [],
-  error: null,
-  loading: false,
-  filterLoading: false,
+  showAllMoves: false,
 }
 
 const pokemonReducer = (state = initialState, action) => {
   switch (action.type) {
-    case 'GET_POKEMON_BEGIN':
-    case 'SEARCH_POKEMON_BEGIN':
+    case GET_POKEMON_BEGIN:
       return {
         ...state,
-        loading: action.type === 'GET_POKEMON_BEGIN' ? true : state.loading,
-        filterLoading:
-          action.type === 'SEARCH_POKEMON_BEGIN' ? true : state.filterLoading,
+        loading: true,
+        error: null,
       }
-    case 'GET_POKEMON_SUCCESS':
+    case GET_POKEMON_SUCCESS:
       return {
         ...state,
         pokemons: [...state.pokemons, ...action.payload.pokemons],
         loading: false,
         error: null,
       }
-    case 'GET_POKEMON_ERROR':
+    case GET_POKEMON_ERROR:
       return {
         ...state,
         pokemons: [],
         loading: false,
         error: action.error,
       }
-    case 'DETAIL_POKEMON':
+    case GET_DETAIL_POKEMON_BEGIN:
+      return {
+        ...state,
+        loadingDetail: true,
+        detail: null,
+        errorDetail: null,
+      }
+    case GET_DETAIL_POKEMON_ERROR:
+      return {
+        ...state,
+        loadingDetail: false,
+        detail: null,
+        errorDetail: action.error,
+      }
+    case DETAIL_POKEMON:
       return {
         ...state,
         detail: action.payload,
+        loadingDetail: false,
       }
-    case 'POKEMON_SPECIES':
+    case POKEMON_SPECIES:
       return {
         ...state,
         species: action.payload,
+        loadingSpecies: false,
+        errorSpecies: null,
       }
-    case 'EVOLUTION_CHAIN':
+    case GET_POKEMON_SPECIES_BEGIN:
+      return {
+        ...state,
+        loadingSpecies: true,
+        errorSpecies: null,
+      }
+    case GET_POKEMON_SPECIES_ERROR:
+      return {
+        ...state,
+        loadingSpecies: false,
+        species: null,
+        errorSpecies: action.error,
+      }
+    case EVOLUTION_CHAIN:
       return {
         ...state,
         evolutionChain: action.payload,
       }
-    case 'POKEMON_COLOR':
+    case POKEMON_COLOR:
       return {
         ...state,
         colors: action.payload,
       }
-    case 'GET_POKEMON_BY_COLOR':
+    case SHOW_POKEMON_MOVES:
       return {
         ...state,
-        pokemons: action.payload,
-      }
-    case 'SET_SEARCH_TERM':
-      return {
-        ...state,
-        searchTerm: action.payload,
-      }
-    case 'CLEAR_SEARCH_TERM':
-      return {
-        ...state,
-        searchTerm: '',
-        searchResults: [],
-      }
-    case 'SEARCH_POKEMON_SUCCESS':
-      return {
-        ...state,
-        searchResults: action.payload,
-        filterLoading: false,
-        error: null,
-      }
-    case 'SEARCH_POKEMON_FAILURE':
-      return {
-        ...state,
-        searchResults: [],
-        filterLoading: false,
-        error: action.error,
-      }
-    case 'FETCH_ERROR':
-      return {
-        ...state,
-        error: action.payload,
+        showAllMoves: !state.showAllMoves,
       }
     default:
       break

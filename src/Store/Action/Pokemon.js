@@ -1,15 +1,28 @@
 import axios from 'axios'
+import {
+  GET_POKEMON_BEGIN,
+  GET_POKEMON_SUCCESS,
+  GET_POKEMON_ERROR,
+  GET_DETAIL_POKEMON_BEGIN,
+  DETAIL_POKEMON,
+  GET_DETAIL_POKEMON_ERROR,
+  GET_POKEMON_SPECIES_BEGIN,
+  POKEMON_SPECIES,
+  GET_POKEMON_SPECIES_ERROR,
+  EVOLUTION_CHAIN,
+  POKEMON_COLOR,
+} from '../Types'
 
 export const getPokemon = (params) => async (dispatch) => {
   const { limit, offset } = params
-  dispatch({ type: 'GET_POKEMON_BEGIN' })
+  dispatch({ type: GET_POKEMON_BEGIN })
   try {
     const response = await axios.get(
       `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
     )
-    const pokemons = response.data.results
+    const all_pokemon = response.data.results
 
-    const detailedPokemonPromises = pokemons.map(async (pokemon) => {
+    const detailedPokemonPromises = all_pokemon.map(async (pokemon) => {
       const color = await getPokemonByColor(pokemon.name)
 
       const pokemonDetailsResponse = await axios.get(
@@ -33,12 +46,12 @@ export const getPokemon = (params) => async (dispatch) => {
     const shuffledPokemon = detailedPokemon.sort(() => Math.random() - 0.5)
 
     dispatch({
-      type: 'GET_POKEMON_SUCCESS',
+      type: GET_POKEMON_SUCCESS,
       payload: { pokemons: shuffledPokemon },
     })
   } catch (err) {
     dispatch({
-      type: 'GET_POKEMON_ERROR',
+      type: GET_POKEMON_ERROR,
       error: err,
     })
   }
@@ -46,36 +59,47 @@ export const getPokemon = (params) => async (dispatch) => {
 
 export const detailPokemon = (params) => (dispatch) => {
   const { id } = params
-  dispatch({ type: 'GET_POKEMON_BEGIN' })
+  dispatch({ type: GET_DETAIL_POKEMON_BEGIN })
   axios
     .get(`https://pokeapi.co/api/v2/pokemon/${id}`)
     .then((response) => {
       dispatch({
-        type: 'DETAIL_POKEMON',
+        type: DETAIL_POKEMON,
         payload: response.data,
       })
     })
-    .catch((err) => console.error('detail error', err))
+    .catch((err) => {
+      dispatch({
+        type: GET_DETAIL_POKEMON_ERROR,
+        error: err,
+      })
+    })
 }
 
 export const pokemonSpecies = (params) => (dispatch) => {
   const { id } = params
+  dispatch({ type: GET_POKEMON_SPECIES_BEGIN })
   axios
     .get(`https://pokeapi.co/api/v2/pokemon-species/${id}`)
     .then((response) => {
       dispatch({
-        type: 'POKEMON_SPECIES',
+        type: POKEMON_SPECIES,
         payload: response.data,
       })
       return axios.get(response.data.evolution_chain.url)
     })
     .then((response) => {
       dispatch({
-        type: 'EVOLUTION_CHAIN',
+        type: EVOLUTION_CHAIN,
         payload: response.data,
       })
     })
-    .catch((err) => console.error('detail error', err))
+    .catch((err) => {
+      dispatch({
+        type: GET_POKEMON_SPECIES_ERROR,
+        error: err,
+      })
+    })
 }
 
 export const getListPokemonColor = () => (dispatch) => {
@@ -83,7 +107,7 @@ export const getListPokemonColor = () => (dispatch) => {
     .get(`https://pokeapi.co/api/v2/pokemon-color`)
     .then((response) => {
       dispatch({
-        type: 'POKEMON_COLOR',
+        type: POKEMON_COLOR,
         payload: response.data,
       })
     })

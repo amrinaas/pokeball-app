@@ -1,17 +1,28 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
+
 import { detailPokemon, pokemonSpecies } from '../Store/Action/Pokemon'
 import Layout from '../Components/Layout'
 import Loading from '../Components/Loading'
 import Badge from '../Components/Badge'
 
+import { SHOW_POKEMON_MOVES } from '../Store/Types'
+
 const PokemonDetail = (props) => {
   const { id } = useParams()
-  const { detail, species, detailPokemon, pokemonSpecies, evolutionChain } =
-    props
-  const [showAll, setShowAll] = useState(false)
-  const [loadingImage, setLoadingImage] = useState(true)
+  const dispatch = useDispatch()
+  const {
+    detail,
+    species,
+    detailPokemon,
+    pokemonSpecies,
+    evolutionChain,
+    loadingDetail,
+    loadingSpecies,
+    showAllMoves,
+  } = props
 
   useEffect(() => {
     detailPokemon({ id: id })
@@ -19,7 +30,7 @@ const PokemonDetail = (props) => {
     // eslint-disable-next-line
   }, [id, detailPokemon, pokemonSpecies])
 
-  if (!detail || !species) {
+  if (loadingDetail || loadingSpecies) {
     return (
       <div className='flex justify-center items-center min-h-screen'>
         <Loading size={'xl'} />
@@ -27,16 +38,16 @@ const PokemonDetail = (props) => {
     )
   }
 
-  const movesToShow =
-    showAll && detail !== null ? detail.moves : detail.moves.slice(0, 10)
-
   const handleShowMore = () => {
-    setShowAll(!showAll)
+    dispatch({ type: SHOW_POKEMON_MOVES })
   }
 
-  const handleHide = () => {
-    setShowAll(false)
-  }
+  const movesToShow =
+    detail === null
+      ? []
+      : showAllMoves
+      ? detail.moves
+      : detail.moves.slice(0, 10)
 
   const EvolutionStage = ({ chain }) => {
     const getImageUrl = (name) => {
@@ -49,7 +60,7 @@ const PokemonDetail = (props) => {
       <div
         className={`flex w-36 bg-white flex-col items-center border-black border-[1px] rounded-xl lg:px-3 md:px-3 px-1 py-2 shadow-md hover:shadow-2xl cursor-pointer relative`}
       >
-        {loadingImage && (
+        {loadingSpecies && (
           <div className='absolute inset-0 flex justify-center items-center'>
             <Loading size={'md'} />
           </div>
@@ -58,12 +69,12 @@ const PokemonDetail = (props) => {
           src={getImageUrl(chain.species.name)}
           alt={chain.species.name}
           className={`rounded-xl h-40 object-contain w-28 ${
-            loadingImage ? 'opacity-0' : 'opacity-100'
+            !loadingSpecies ? 'opacity-100' : 'opacity-0'
           }`}
-          onLoad={() => setLoadingImage(false)}
+          // onLoad={() =>  loadingSpecies(false)}
         />
 
-        {!loadingImage && (
+        {!loadingSpecies && (
           <p className='capitalize mt-2'>
             {chain.species.name} <span className='text-gray-400'>(#{id})</span>
           </p>
@@ -74,7 +85,6 @@ const PokemonDetail = (props) => {
 
   const renderEvolution = (chain) => {
     if (!chain || !chain.species) return null
-
     return (
       <div
         className={`flex ${
@@ -245,33 +255,23 @@ const PokemonDetail = (props) => {
             <h3 className='text-left font-bold mt-3 text-lg underline'>
               Moves :
             </h3>{' '}
-            <p className='flex flex-wrap'>
+            <span className='flex flex-wrap'>
               {movesToShow.map((item, id) => {
                 return (
                   <React.Fragment key={id}>
                     <span className='leading-loose mr-0.5 ml-0.5 first:ml-0'>
                       <Badge text={item.move.name} color={'#a29f58'} />
                     </span>
-                    {!showAll && detail.moves.length > 10 && id === 9 && (
-                      <button
-                        className='text-white bg-blue-500 py-1 px-2 rounded-lg shadow-md m-1'
-                        onClick={handleShowMore}
-                      >
-                        Show all
-                      </button>
-                    )}
-                    {showAll && id === detail.moves.length - 1 && (
-                      <button
-                        className='text-white bg-blue-500 py-1 px-2 rounded-lg shadow-md m-1'
-                        onClick={handleHide}
-                      >
-                        Hide
-                      </button>
-                    )}
                   </React.Fragment>
                 )
               })}
-            </p>
+              <button
+                className='text-white bg-blue-500 py-1 px-2 rounded-lg shadow-md m-1'
+                onClick={handleShowMore}
+              >
+                {showAllMoves ? 'Show Less' : 'Show More'}
+              </button>
+            </span>
           </div>
 
           {/* Evolutions */}
@@ -295,6 +295,11 @@ const mapStateToProps = (state) => {
     detail: state.Pokemon.detail,
     species: state.Pokemon.species,
     evolutionChain: state.Pokemon.evolutionChain,
+    showAllMoves: state.Pokemon.showAllMoves,
+    loadingDetail: state.Pokemon.loadingDetail,
+    errorDetail: state.Pokemon.errorDetail,
+    loadingSpecies: state.Pokemon.loadingSpecies,
+    errorSpecies: state.Pokemon.errorSpecies,
   }
 }
 
