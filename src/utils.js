@@ -36,3 +36,12 @@ export const getColorBadgeHex = (type) => {
   }
   return colors[type] ? `${colors[type]}` : '#808080'
 }
+
+export const getUniqueValues = (data, type) => {
+  let unique = data.map((item) => item[type])
+
+  if (type === 'types') {
+    unique = unique.flat().map((item) => item.type.name)
+  }
+  return ['all', ...new Set(unique)]
+}
