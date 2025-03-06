@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPokemon } from '../Store/Action/Pokemon'
-// import { setSearchTerm, setSearchResults } from '../Store/Action/Filter'
 
 import CardList from '../Components/CardList'
 import Layout from '../Components/Layout'
@@ -37,7 +36,7 @@ const PokemonList = () => {
     })
   }, [pokemons])
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const scrollPosition =
       window.innerHeight + document.documentElement.scrollTop
     const documentHeight = document.documentElement.offsetHeight
@@ -49,13 +48,34 @@ const PokemonList = () => {
         setOffset((prev) => prev + limit)
       }
     }
-  }
+  }, [loading, filterLoading, filters, dispatch])
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
     // eslint-disable-next-line
-  }, [loading])
+  }, [handleScroll])
+
+  const renderCardList = useMemo(() => {
+    if (filtered_pokemon.length === 0 && pokemons.length === 0) {
+      return <p>No pokemon by type</p>
+    }
+
+    if (filterLoading && filtered_pokemon.length === 0) {
+      return (
+        <div className='mt-36'>
+          <Loading />
+        </div>
+      )
+    }
+
+    if (filtered_pokemon.length !== 0) {
+      return <CardList data={filtered_pokemon} />
+    }
+
+    return <CardList data={data} />
+    // eslint-disable-next-line
+  }, [filtered_pokemon, pokemons, data, filterLoading])
 
   if (pokemons.length === 0 && loading) {
     return (
@@ -71,18 +91,11 @@ const PokemonList = () => {
       <Filters />
       {error && <p className='mt-5'>{error}</p>}
       <div className='lg:mx-20 md:mx-10 mx-2 my-6'>
-        <CardList
-          data={filtered_pokemon.length > 0 ? filtered_pokemon : data}
-        />
+        {renderCardList}
         {loading && (
           <h2 className='text-xl text-center'>Load more pokemon ...</h2>
         )}
       </div>
-      {filterLoading && filtered_pokemon.length === 0 && (
-        <div className='mt-20'>
-          <Loading size={'md'} />
-        </div>
-      )}
     </Layout>
   )
 }
