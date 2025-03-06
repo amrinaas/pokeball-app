@@ -1,14 +1,13 @@
 import axios from 'axios'
-import { getPokemonByColor, getPokemon } from './Pokemon.js'
+import { getPokemonByColor } from './Pokemon.js'
 import {
   FILTERED_POKEMON,
-  SEARCH_POKEMON_BEGIN,
-  SEARCH_POKEMON_SUCCESS,
-  SEARCH_POKEMON_FAILURE,
+  FILTER_POKEMON_BEGIN,
+  FILTER_POKEMON_ERROR,
   POKEMON_TYPES,
-  SET_SEARCH_TERM,
-  CLEAR_SEARCH_TERM,
   FETCH_ERROR,
+  UPDATE_FILTER_OFFSET,
+  RESET_FILTERED_POKEMON,
 } from '../Types'
 
 export const pokemonType = () => async (dispatch) => {
@@ -32,84 +31,81 @@ export const pokemonType = () => async (dispatch) => {
   }
 }
 
-export const searchPokemon = (searchTerm) => async (dispatch) => {
-  dispatch({ type: SEARCH_POKEMON_BEGIN })
-  if (searchTerm.trim() === '') {
-    dispatch(getPokemon({ limit: 20, offset: 0 }))
-  } else {
-    try {
-      const response = await axios.get(
-        `https://pokeapi.co/api/v2/pokemon/${searchTerm}`
-      )
+export const filterPokemon = (params) => async (dispatch, getState) => {
+  const { types, nameOrId } = params
+  const { filteredOffset } = getState().Filter
+  dispatch({ type: FILTER_POKEMON_BEGIN })
 
+  try {
+    const limit = 20 // Set your desired limit here
+    let filteredPokemon = []
+
+    if (nameOrId) {
+      const response = await axios.get(
+        `https://pokeapi.co/api/v2/pokemon/${nameOrId}`
+      )
       const pokemonDetails = response.data
       const color = await getPokemonByColor(pokemonDetails.name)
 
-      const detailedPokemon = {
-        name: pokemonDetails.name,
-        types: pokemonDetails.types,
-        stats: pokemonDetails.stats,
-        color: color,
-        id: pokemonDetails.id,
-        image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
-      }
-
-      dispatch({
-        type: SEARCH_POKEMON_SUCCESS,
-        payload: [detailedPokemon],
-      })
-    } catch (error) {
-      dispatch({
-        type: SEARCH_POKEMON_FAILURE,
-        error: error.response.data,
-      })
+      filteredPokemon = [
+        {
+          name: pokemonDetails.name,
+          types: pokemonDetails.types,
+          stats: pokemonDetails.stats,
+          color: color,
+          id: pokemonDetails.id,
+          image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
+        },
+      ]
     }
-  }
-}
 
-export const filterPokemon = (type, value) => (dispatch) => {
-  dispatch({
-    type: FILTERED_POKEMON,
-    payload: { type, value },
-  })
-}
+    if (types) {
+      const response = await axios.get(
+        `https://pokeapi.co/api/v2/type/${types}`
+      )
+      const pokemonByType = response.data.pokemon.slice(
+        filteredOffset,
+        filteredOffset + limit
+      )
 
-export const setSearchTerm = (term) => ({
-  type: SET_SEARCH_TERM,
-  payload: term,
-})
+      const detailedPokemonPromises = pokemonByType.map(async (pokemon) => {
+        const color = await getPokemonByColor(pokemon.pokemon.name)
+        const pokemonDetailsResponse = await axios.get(
+          `https://pokeapi.co/api/v2/pokemon/${pokemon.pokemon.name}`
+        )
+        const pokemonDetails = pokemonDetailsResponse.data
 
-export const clearSearchTerm = () => ({
-  type: CLEAR_SEARCH_TERM,
-})
-
-export const filterPokemonByType = (type) => async (dispatch) => {
-  try {
-    dispatch({ type: SEARCH_POKEMON_BEGIN })
-
-    const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`)
-
-    if (response.status === 200) {
-      const pokemons = response.data.pokemon.map((p) => p.pokemon)
-      dispatch({
-        type: SEARCH_POKEMON_SUCCESS,
-        payload: pokemons,
+        return {
+          name: pokemonDetails.name,
+          types: pokemonDetails.types,
+          stats: pokemonDetails.stats,
+          color: color,
+          id: pokemonDetails.id,
+          image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
+        }
       })
-    } else {
-      dispatch({
-        type: SEARCH_POKEMON_FAILURE,
-        error: `Error: Received status code ${response.status}`,
-      })
+
+      filteredPokemon = await Promise.all(detailedPokemonPromises)
     }
+
+    dispatch({
+      type: FILTERED_POKEMON,
+      payload: filteredPokemon,
+    })
+
+    // Update offset for next fetch
+    dispatch({
+      type: UPDATE_FILTER_OFFSET,
+      payload: filteredOffset + limit,
+    })
   } catch (error) {
     dispatch({
-      type: SEARCH_POKEMON_FAILURE,
+      type: FILTER_POKEMON_ERROR,
       error: error.message,
     })
   }
 }
 
-export const setSearchResults = (results) => ({
-  type: 'SET_SEARCH_RESULTS',
-  payload: results,
+export const resetFilteredPokemon = () => ({
+  type: RESET_FILTERED_POKEMON,
 })
