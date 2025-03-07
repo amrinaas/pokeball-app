@@ -14,7 +14,7 @@ const initialState = {
   search_term: '',
   types: [],
   filters: {
-    types: '',
+    type: '',
     nameOrId: '',
     colors: [],
     abilities: [],
