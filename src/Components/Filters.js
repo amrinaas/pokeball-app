@@ -7,31 +7,25 @@ import {
   pokemonType,
   filterPokemon,
   resetFilteredPokemon,
+  searchPokemon,
 } from '../Store/Action/Filter.js'
-import Badge from './Badge.js'
 import { getColorBadgeHex, getUniqueValues } from '../utils.js'
 import { UPDATE_FILTER } from '../Store/Types.js'
 
 const Filters = () => {
   const dispatch = useDispatch()
-  const { pokemons } = useSelector((state) => state.Pokemon)
   const { filters, types } = useSelector((state) => state.Filter)
+  let { type, nameOrId } = filters
 
   useEffect(() => {
     dispatch(pokemonType())
-    // eslint-disable-next-line
-  }, [pokemons])
-
-  useEffect(() => {
     dispatch(filterPokemon(filters))
-    // eslint-disable-next-line
-  }, [filters, dispatch])
 
-  // const handleSearchClick = () => {
-  //   dispatch({ type: FILTERED_POKEMON })
-  // }
+    // eslint-disable-next-line
+  }, [type, dispatch])
 
   const handleResetFilter = () => {
+    dispatch(resetFilteredPokemon())
     dispatch(getPokemon({ limit: 20, offset: 0 }))
   }
 
@@ -39,8 +33,8 @@ const Filters = () => {
     let name = event.currentTarget.name
     let value = event.target.value
 
-    if (name === 'types') {
-      value = event.target.innerText
+    if (name === 'type') {
+      value = event.target.innerText.toLowerCase()
     }
 
     if (name === 'nameOrId') {
@@ -51,6 +45,10 @@ const Filters = () => {
     dispatch({ type: UPDATE_FILTER, payload: { name, value } })
   }
 
+  const handleSearchPokemon = () => {
+    dispatch(searchPokemon(nameOrId))
+  }
+
   const pokemonTypes = getUniqueValues(types, 'name')
 
   return (
@@ -59,30 +57,37 @@ const Filters = () => {
         <Input
           placeholder={'Search pokemon by name or pokemon ID'}
           label={'Search Pokemon'}
-          value={filters.nameOrId}
+          value={nameOrId}
           handleChange={handleUpdateFilter}
           customStyle='w-3/4'
           name={'nameOrId'}
         />
         <div className='flex ml-5'>
-          {/* <Button handleClick={handleSearchClick}>Search</Button> */}
+          <Button handleClick={handleSearchPokemon}>Search</Button>
           <Button handleClick={handleResetFilter}>Reset filter</Button>
         </div>
       </div>
       <div className='mt-5'>
-        <h1>Filter by Type: </h1>
-        <p className='flex flex-wrap'>
-          {pokemonTypes.map((type) => (
-            <button
-              key={type}
-              name='types'
-              type='button'
-              onClick={handleUpdateFilter}
-              className='leading-loose mr-0.5 ml-0.5 first:ml-0 hover:bg-gray-500 cursor-pointer'
-            >
-              <Badge text={type} color={getColorBadgeHex(type)} />
-            </button>
-          ))}
+        <h1 className='font-bold underline'>Filter by Type: </h1>
+        <p className='grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-2 lg:w-2/5 w-1/2 mt-3'>
+          {pokemonTypes.map((name) => {
+            return (
+              <button
+                key={name}
+                name='type'
+                type='Button'
+                onClick={handleUpdateFilter}
+                style={{ backgroundColor: getColorBadgeHex(name) }}
+                className={`capitalize leading-loose mr-0.5 ml-0.5 first:ml-0 text-white cursor-pointer border-[1px] px-4 py-1 rounded ${
+                  type === name
+                    ? 'text-white shadow-2xl transform scale-110 border-black'
+                    : 'text-slate-400 shadow-md border-white'
+                } transition duration-300 ease-in-out`}
+              >
+                {name}
+              </button>
+            )
+          })}
         </p>
       </div>
     </div>

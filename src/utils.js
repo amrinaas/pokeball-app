@@ -43,5 +43,6 @@ export const getUniqueValues = (data, type) => {
   if (type === 'types') {
     unique = unique.flat().map((item) => item.type.name)
   }
-  return ['all', ...new Set(unique)]
+  return [...new Set(unique)]
+  // return ['all', ...new Set(unique)]
 }

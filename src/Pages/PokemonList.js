@@ -11,9 +11,12 @@ import { filterPokemon } from '../Store/Action/Filter'
 const PokemonList = () => {
   const dispatch = useDispatch()
   const { pokemons, loading, error } = useSelector((state) => state.Pokemon)
-  const { filtered_pokemon, filterLoading, filters } = useSelector(
-    (state) => state.Filter
-  )
+  const {
+    filtered_pokemon,
+    filterLoading,
+    filters,
+    error: filterError,
+  } = useSelector((state) => state.Filter)
 
   const limit = 20
   const [data, setData] = useState([])
@@ -42,7 +45,7 @@ const PokemonList = () => {
     const documentHeight = document.documentElement.offsetHeight
 
     if (scrollPosition >= documentHeight - 5 && !loading && !filterLoading) {
-      if (filters.types) {
+      if (filters.type) {
         dispatch(filterPokemon(filters))
       } else {
         setOffset((prev) => prev + limit)
@@ -90,9 +93,10 @@ const PokemonList = () => {
       <h1 className='pt-5 text-2xl font-bold'>Pokédex</h1>
       <Filters />
       {error && <p className='mt-5'>{error}</p>}
+      {filterError && <p className='mt-5'>{filterError}</p>}
       <div className='lg:mx-20 md:mx-10 mx-2 my-6'>
-        {renderCardList}
-        {loading && (
+        {!error && !filterError && renderCardList}
+        {(loading || (filterLoading && filtered_pokemon.length !== 0)) && (
           <h2 className='text-xl text-center'>Load more pokemon ...</h2>
         )}
       </div>

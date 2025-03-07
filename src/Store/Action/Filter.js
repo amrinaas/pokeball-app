@@ -32,37 +32,16 @@ export const pokemonType = () => async (dispatch) => {
 }
 
 export const filterPokemon = (params) => async (dispatch, getState) => {
-  const { types, nameOrId } = params
+  const { type } = params
   const { filteredOffset } = getState().Filter
   dispatch({ type: FILTER_POKEMON_BEGIN })
 
   try {
-    const limit = 20 // Set your desired limit here
+    const limit = 20
     let filteredPokemon = []
 
-    if (nameOrId) {
-      const response = await axios.get(
-        `https://pokeapi.co/api/v2/pokemon/${nameOrId}`
-      )
-      const pokemonDetails = response.data
-      const color = await getPokemonByColor(pokemonDetails.name)
-
-      filteredPokemon = [
-        {
-          name: pokemonDetails.name,
-          types: pokemonDetails.types,
-          stats: pokemonDetails.stats,
-          color: color,
-          id: pokemonDetails.id,
-          image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
-        },
-      ]
-    }
-
-    if (types) {
-      const response = await axios.get(
-        `https://pokeapi.co/api/v2/type/${types}`
-      )
+    if (type) {
+      const response = await axios.get(`https://pokeapi.co/api/v2/type/${type}`)
       const pokemonByType = response.data.pokemon.slice(
         filteredOffset,
         filteredOffset + limit
@@ -109,3 +88,35 @@ export const filterPokemon = (params) => async (dispatch, getState) => {
 export const resetFilteredPokemon = () => ({
   type: RESET_FILTERED_POKEMON,
 })
+
+export const searchPokemon = (nameOrId) => async (dispatch) => {
+  let filteredPokemon = []
+
+  dispatch({ type: FILTER_POKEMON_BEGIN })
+  try {
+    if (nameOrId) {
+      const response = await axios.get(
+        `https://pokeapi.co/api/v2/pokemon/${nameOrId}`
+      )
+      const pokemonDetails = response.data
+      const color = await getPokemonByColor(pokemonDetails.name)
+
+      filteredPokemon = [
+        {
+          name: pokemonDetails.name,
+          types: pokemonDetails.types,
+          stats: pokemonDetails.stats,
+          color: color,
+          id: pokemonDetails.id,
+          image: `https://img.pokemondb.net/artwork/${pokemonDetails.name}.jpg`,
+        },
+      ]
+    }
+    dispatch({ type: FILTERED_POKEMON, payload: filteredPokemon })
+  } catch (error) {
+    dispatch({
+      type: FILTER_POKEMON_ERROR,
+      error: error.message,
+    })
+  }
+}
